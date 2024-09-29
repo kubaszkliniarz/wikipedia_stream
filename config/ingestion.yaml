@@ -1,3 +1,7 @@
 wikipedia-listener:
-    accepted_wikis: 
-        - enwiki
+    url: https://stream.wikimedia.org/v2/stream
+    endpoint:
+        - recentchange
+        - revision-create
+    accepted_wikis:
+        - plwiki
