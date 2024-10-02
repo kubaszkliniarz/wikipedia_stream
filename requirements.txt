@@ -1,0 +1,6 @@
+aiohttp==3.10.8
+attr==0.3.2
+cassandra_driver==3.29.2
+confluent_kafka==2.5.3
+Requests==2.32.3
+sseclient==0.0.27

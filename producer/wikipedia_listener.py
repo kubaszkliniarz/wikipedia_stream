@@ -4,6 +4,7 @@ import ssl
 
 from config.config_helpers import get_config
 from helpers.logger import setup_logger
+from kafka_producer import produce_event_to_kafka
 
 logger = setup_logger(__name__)
 
@@ -42,9 +43,8 @@ async def stream_listener(url, wikis_to_scrape):
 
                     # Process the event if it is a data event
                     if event_info.get("event") == "message":
-                        if "meta" in event_info["data"]:
-                            # Implementing filtering logic
-                            data = event_info["data"]
+                        data = event_info["data"]
+                        if "meta" in data:
                             if data["meta"]["domain"] == "canary":
                                 continue
                             if data["meta"]["stream"] == "mediawiki.recentchange":
@@ -53,11 +53,12 @@ async def stream_listener(url, wikis_to_scrape):
                             if data["meta"]["stream"] == "mediawiki.revision-create":
                                 if data["database"] not in wikis_to_scrape:
                                     continue
-                            
-                            logger.info(f"Received {data["meta"]["stream"]} event: {event_data[:50]}")
+
+                            await produce_event_to_kafka(data, data["meta"]["stream"])
+                            logger.info(f"Received {data["meta"]["stream"]} event: {data}")
 
 async def run_wikipedia_listener():
-    config = get_config("wikipedia_stream/config/ingestion.yaml")["wikipedia-listener"]
+    config = get_config("config/ingestion.yaml")["wikipedia-listener"]
     wikis_to_scrape = config["accepted_wikis"]
     url = f"{config['url']}/{','.join(config['endpoint'])}"
     await stream_listener(url, wikis_to_scrape)
